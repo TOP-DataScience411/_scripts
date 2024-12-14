@@ -29,3 +29,20 @@ dinner_table = Table(4, 860, 1200, 1200)
 # >>> type(computer_table) is computer_table.__class__ is Table
 # True
 
+
+# обращения к атрибутам
+print(
+    computer_table.legs,
+    dinner_table.legs
+)
+# 6 4
+
+# вызов методов
+computer_table.put_on_table('keyboard', 'mouse')
+dinner_table.put_on_table('dishes')
+
+print(*computer_table.objects)
+print(*dinner_table.objects)
+# keyboard mouse
+# dishes
+
