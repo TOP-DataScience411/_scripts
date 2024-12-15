@@ -21,7 +21,7 @@ sony_mxh400 = AudioPlayer()
 # <bound method AudioPlayer.play of <__main__.AudioPlayer object at 0x000001C335DBB950>>
 
 
-# при вызове связанного метода от экземпляра происходит подмена вызова:
+# при вызове связанного метода от экземпляра происходит подмена вызова c передачей экземпляра в качестве аргумента::
 #   instance.method -> <bound method Class.function of instance>
 #   instance.method(*args, **kwargs) -> Class.function(instance, *args, **kwargs)
 
