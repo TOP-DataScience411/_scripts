@@ -46,3 +46,43 @@ ins_vacations = (
     'values '
     '  (%s, %s, %s) '
 )
+
+
+sel_donations_by_year = '''
+    select
+      extract(year from "date") as year,
+      sum(amount)
+    from
+      donations
+    group by
+      year
+    order by
+      year
+'''
+
+sel_donations_by_year_and_dep = '''
+    select
+      extract(year from "date") as year,
+      dep_id,
+      sum(amount)
+    from
+      donations
+    group by
+      year, 
+      dep_id
+    order by
+      year,
+      dep_id
+'''
+
+sel_count_week_vacations = '''
+    select
+      case when end_date - start_date <= 7 then 'неделя'
+           else 'больше недели'
+      end as week_or_more,
+      count(*)
+    from 
+      vacations
+    group by
+      week_or_more
+'''
