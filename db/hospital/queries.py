@@ -86,3 +86,36 @@ sel_count_week_vacations = '''
     group by
       week_or_more
 '''
+
+sel_wards_departments = '''
+    select 
+      wards.name,
+      departments.name
+    from
+      wards
+    join
+      departments on dep_id = departments.id
+'''
+
+sel_groupconcat_wards_departments = '''
+      select d.name as "отделение",
+             string_agg(w.name, ', ') as "палаты"
+        from wards as w
+        join departments as d
+          on dep_id = d.id
+    group by d.name
+'''
+
+sel_large_donations = '''
+      select d.name as "отделение",
+             s.name as "спонсор",
+             date as "дата",
+             amount as "сумма"
+        from departments as d
+        join donations
+          on d.id = dep_id and d.id between 2 and 5
+        join sponsors as s
+          on sponsor_id = s.id and amount > 500000
+    order by "отделение", "сумма"
+'''
+

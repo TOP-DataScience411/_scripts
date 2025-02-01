@@ -19,6 +19,11 @@ with connection.cursor() as cursor:
     donations_by_year = cursor.fetchall()
     
     count_week_vacations = cursor.execute(queries.sel_count_week_vacations).fetchall()
+    
+    groupconcat_wards_departments = cursor.execute(queries.sel_groupconcat_wards_departments)\
+                                          .fetchall()
+    
+    large_donations = cursor.execute(queries.sel_large_donations).fetchall()
 
 
 # >>> print(*donations_by_year, sep='\n')
