@@ -224,3 +224,32 @@ sel_min_max_in_one_col = '''
     select 'максимальное городское население' as q, max(Population) from city
 '''
 
+sel_mln_cities_gt_5 = '''
+    select
+      country.name
+    from
+      city
+    join 
+      country on countrycode = code 
+              and city.population > 1000000
+    group by
+      country.name
+    having
+      count(*) > 5
+    order by
+      country.name
+'''
+
+sel_spanish_longlive = '''
+      select c.name
+        from country as c
+        join countrylanguage as cl 
+          on countrycode = code
+         and lifeexpectancy > 70
+         and isofficial = 'T'
+    group by c.name
+      having group_concat('', language) like '%Spanish%'
+         and count(*) = 1
+    order by c.name
+'''
+
