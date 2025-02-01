@@ -31,6 +31,20 @@ with connection.cursor() as cursor:
     
     vac_cnt_for_last_two_years = cursor.execute(queries.sel_vac_cnt_for_last_two_years)\
                                        .fetchall()
+    
+    dep_specs = cursor.execute(queries.sel_dep_specs).fetchall()
+    specs = cursor.execute(queries.sel_sepcs).fetchall()
+
+
+from itertools import chain
+
+specs = set(chain(*specs))
+
+dep_all_specs = []
+for dep, d_specs in dep_specs:
+    dep_all_specs.append((dep, f'ЕСТЬ: {d_specs}'))
+    miss = sorted(specs - set(d_specs.split(', ')))
+    dep_all_specs.append((dep, f'НЕТ: {", ".join(miss)}'))
 
 
 # >>> print(*donations_by_year, sep='\n')

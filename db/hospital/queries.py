@@ -253,3 +253,29 @@ sel_spanish_longlive = '''
     order by c.name
 '''
 
+sel_dep_specs = '''
+    select
+      subq.dep_name,
+      string_agg(subq.spec, ', ') as specs
+    from (
+      select distinct
+        dep.name as dep_name,
+        s.name as spec
+      from
+        departments as dep
+      join
+        doctors as d on dep.id = dep_id
+      join
+        doctors_specs on d.id = doctor_id
+      join
+        specializations as s on spec_id = s.id
+      order by
+        dep.name,
+        s.name
+    ) as subq
+    group by
+      subq.dep_name
+'''
+
+sel_sepcs = 'select name from specializations'
+
