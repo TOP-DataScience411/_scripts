@@ -199,3 +199,28 @@ sel_doctors_salary_lt_avg = '''
     where salary < (select avg(salary) from doctors)
 '''
 
+sel_countries_area_by_region_with_total = '''
+    select 
+      concat(Continent, ' — ', Region) as cont_reg,
+      sum(SurfaceArea) as area
+    from 
+      country
+    group by 
+      cont_reg
+    union
+    select 
+      "Total",
+      sum(SurfaceArea)
+    from 
+      country
+    order by
+      cont_reg,
+      area
+'''
+
+sel_min_max_in_one_col = '''
+    select 'минимальное городское население' as q, min(Population) from city
+    union
+    select 'максимальное городское население' as q, max(Population) from city
+'''
+
