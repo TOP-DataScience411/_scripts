@@ -155,3 +155,47 @@ sel_vac_cnt_for_last_two_years = '''
       name;
 '''
 
+sel_avg_vacations_cnt = '''
+    select 
+      round(avg(subq.cnt), 1) as "average vacations"
+    from (
+      select
+        doctor_id,
+        count(*) as cnt
+      from 
+        vacations
+      group by
+        doctor_id
+    ) as subq
+'''
+
+sel_max_income_by_spec = '''
+    select
+      concat_ws(' ', last_name, first_name, patr_name) as "ФИО",
+      ext_d.salary + ext_d.premium as "Доход"
+    from 
+      doctors as ext_d
+    join (
+      select 
+        max(salary + premium) as "Доход",
+        coalesce(s.name, 'Младший персонал') as "Специальность"
+      from
+        doctors as d
+      left join 
+        doctors_specs on d.id = doctor_id
+      left join 
+        specializations as s on spec_id = s.id
+      group by 
+        "Специальность"
+    ) as subq on subq."Доход" = ext_d.salary + ext_d.premium
+'''
+
+sel_doctors_salary_lt_avg = '''
+    select
+      concat_ws(' ', last_name, first_name, patr_name) as full_name,
+      salary
+    from
+      doctors
+    where salary < (select avg(salary) from doctors)
+'''
+
