@@ -138,3 +138,20 @@ sel_doctors_cnt_for_spec = '''
       order by "Кол-во врачей" desc;
 '''
 
+sel_vac_cnt_for_last_two_years = '''
+    select 
+      name,
+      count(v.id)
+    from 
+      vacations as v
+    join 
+      doctors as d on doctor_id = d.id 
+                   and extract(year from start_date) >= extract(year from current_date) - 2
+    join 
+      departments as dep on dep_id = dep.id
+    group by 
+      name
+    order by
+      name;
+'''
+

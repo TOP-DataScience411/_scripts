@@ -28,6 +28,9 @@ with connection.cursor() as cursor:
     all_doctors_specs = cursor.execute(queries.sel_all_doctors_specs).fetchall()
     
     doctors_cnt_for_spec = cursor.execute(queries.sel_doctors_cnt_for_spec).fetchall()
+    
+    vac_cnt_for_last_two_years = cursor.execute(queries.sel_vac_cnt_for_last_two_years)\
+                                       .fetchall()
 
 
 # >>> print(*donations_by_year, sep='\n')
