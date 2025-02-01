@@ -119,3 +119,22 @@ sel_large_donations = '''
     order by "отделение", "сумма"
 '''
 
+sel_all_doctors_specs = '''
+       select concat_ws(' ', last_name, first_name, patr_name) as "ФИО",
+              string_agg(s.name, ', ') as "Специальность"
+         from doctors as d
+    left join doctors_specs on d.id = doctor_id
+    left join specializations as s on spec_id = s.id
+     group by "ФИО"
+     order by "ФИО"
+'''
+
+sel_doctors_cnt_for_spec = '''
+        select s.name as "Специальность",
+               count(doctor_id) as "Кол-во врачей"
+          from doctors_specs
+    right join specializations as s on spec_id = s.id
+      group by s.name
+      order by "Кол-во врачей" desc;
+'''
+
