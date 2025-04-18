@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt, rcParams
 from pandas import DataFrame, Series
 from sklearn.datasets import load_breast_cancer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, fbeta_score
 from sklearn.model_selection import train_test_split
 
 from pathlib import Path
@@ -71,6 +71,9 @@ data_all = DataFrame(
 # 1    357
 # 0    212
 # Name: count, dtype: int64
+
+# 0 — злокачественные
+# 1 — доброкачественные
 
 
 # >>> data.describe().transpose().round(2)
@@ -224,6 +227,15 @@ x_train, x_test, y_train, y_test = train_test_split(
     test_size=0.2,
     random_state=1
 )
+# >>> y_test.value_counts()
+# target
+# 1    72
+# 0    42
+# Name: count, dtype: int64
+
+# 0 — злокачественные   — отрицательный
+# 1 — доброкачественные — положительный
+
 
 model = LogisticRegression()
 
@@ -237,7 +249,70 @@ conf_matr = confusion_matrix(y_test, y_pred)
 # array([[37,  5],
 #        [ 0, 72]])
 
-# >>> confusion_matrix(abs(y_test - 1), abs(y_pred - 1))
-# array([[72,  0],
-#        [ 5, 37]])
+(TN, FP), (FN, TP) = conf_matr
+
+# можно использовать для сравнения разных моделей или модели на разных выборках
+accuracy = (TN + TP) / (TN + FN + FP + TP)
+# accuracy = sum(conf_matr.diagonal()) / x_test.shape[0]
+
+# общая точность (корректность) модели
+# >>> print(f'{accuracy:.1%}')
+# 95.6%
+
+specificity = TN / (TN + FP)
+# specificity = conf_matr[0,0] / sum(conf_matr[0])
+
+# >>> print(f'{specificity:.1%}')
+# 88.1%
+
+# вероятность совершить ошибку второго рода (считая именно отрицательный класс более важным в контексте задачи)
+# >>> print(f'{1 - specificity:.1%}')
+# 11.9%
+
+precision = TP / (FP + TP)
+# precision = conf_matr[1,1] / sum(conf_matr[:, 1])
+
+# >>> print(f'{precision:.1%}')
+# 93.5%
+
+recall = TP / (FN + TP)
+# recall = conf_matr[1,1] / sum(conf_matr[1])
+
+# >>> print(f'{recall:.1%}')
+# 100.0%
+
+# вероятность совершить ошибку второго рода (считая положительный класс более важным в контексте задачи)
+# >>> print(f'{1 - recall:.1%}')
+# 0%
+
+# можно использовать для сравнения разных моделей или модели на разных выборках
+f1 = 2 * precision * recall / (precision + recall)
+
+# >>> print(f'{f1:.1%}')
+# 96.6%
+
+# можно использовать для сравнения разных моделей или модели на разных выборках
+# понижение значения параметра beta приводит к повышению важности метрики precision, а значит ложноположительных (FP) результатов, а значит отрицательного класса
+fbeta = fbeta_score(y_test, y_pred, beta=0.001)
+
+# >>> print(f'{fbeta:.1%}')
+# 94.7%
+
+print(
+    f'{accuracy=:.1%}',
+    f'{specificity=:.1%}',
+    f'ошибок второго рода: {FP}',
+    f'{precision=:.1%}',
+    f'{recall=:.1%}',
+    f'{f1=:.1%}',
+    f'{fbeta=:.1%}',
+    sep='\n'
+)
+# accuracy=95.6%
+# specificity=88.1%
+# ошибок второго рода: 5
+# precision=93.5%
+# recall=100.0%
+# f1=96.6%
+# fbeta=93.5%
 
