@@ -1,5 +1,9 @@
 from keras import Sequential
-from keras.activations import relu, softmax
+from keras.activations import (
+    relu, 
+    sigmoid,
+    softmax,
+)
 from keras.layers import Dense, Input
 from keras.losses import CategoricalCrossentropy
 from keras.metrics import (
@@ -10,9 +14,15 @@ from keras.metrics import (
 from keras.optimizers import Adam
 
 from matplotlib import pyplot as plt
-from numpy import array, load as load_npz
+from numpy import (
+    array, 
+    load as load_npz, 
+)
 from numpy.random import default_rng
+from PIL import Image
+from sklearn.metrics import accuracy_score
 
+from functools import partial
 from pathlib import Path
 from sys import path
 
@@ -23,6 +33,7 @@ def one_hot_encoder(x):
 
 def one_hot_decoder(x):
     ...
+
 
 
 script_dir = Path(path[0])
@@ -73,34 +84,35 @@ y_test = array([one_hot_encoder(y) for y in y_test])
 # 9 -> 0 0 0 0 0 0 0 0 0 1
 
 
-model = Sequential()
+model = Sequential(name='MNIST_digits_reckognition')
 
 model.add(Input(shape=(input_vector_len,), dtype='float64'))
-model.add(Dense(400, activation=relu), )
-# model.add(Dense(100, activation=relu), )
+model.add(Dense(200, activation=partial(relu, threshold=0.4)), )
+model.add(Dense(100, activation=sigmoid), )
 model.add(Dense(10, activation=softmax, name='output'))
 
 model.summary()
-# Model: "sequential"
+# Model: "MNIST_digits_reckognition"
+# Model: "MNIST_digits_reckognition"
 # ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┓
 # ┃ Layer (type)                         ┃ Output Shape                ┃         Param # ┃
 # ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━┩
-# │ dense (Dense)                        │ (None, 400)                 │         314,000 │
+# │ dense (Dense)                        │ (None, 200)                 │         157,000 │
 # ├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
-# │ output (Dense)                       │ (None, 10)                  │           4,010 │
+# │ dense_1 (Dense)                      │ (None, 100)                 │          20,100 │
+# ├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤
+# │ output (Dense)                       │ (None, 10)                  │           1,010 │
 # └──────────────────────────────────────┴─────────────────────────────┴─────────────────┘
-#  Total params: 318,010 (1.21 MB)
-#  Trainable params: 318,010 (1.21 MB)
+#  Total params: 178,110 (695.74 KB)
+#  Trainable params: 178,110 (695.74 KB)
 #  Non-trainable params: 0 (0.00 B)
 
-breakpoint()
 
 model.compile(
     loss=CategoricalCrossentropy(),
     optimizer=Adam(learning_rate=0.01),
     metrics=[
         CategoricalAccuracy(name='acc'),
-        CategoricalCrossentropyMetric(name='cce'),
         # F1Score(name='f1'),
     ]
 )
@@ -112,7 +124,7 @@ training_results = model.fit(
     x_train,
     y_train,
     epochs=epochs,
-    validation_split=0.15,
+    validation_split=0.25,
     verbose=1
 )
 
@@ -124,9 +136,14 @@ scores = model.evaluate(
     return_dict=True,
     verbose=1
 )
+print(
+    f'\nloss = {scores["loss"]:.3f}',
+    f'\naccuracy = {scores["acc"]:.1%}\n',
+)
+# loss = 0.149
+# accuracy = 96.3%
 
-
-fig = plt.figure(figsize=(10, 5))
+fig = plt.figure(figsize=(11, 5))
 axs = fig.subplots(1, 2)
 
 axs[0].plot(
@@ -142,7 +159,7 @@ axs[0].plot(
 axs[0].scatter(
     epochs+1, 
     scores['loss'], 
-    s=15, 
+    s=30, 
     c='#c80608', 
     label='test_loss'
 )
@@ -162,7 +179,7 @@ axs[1].plot(
 axs[1].scatter(
     epochs+1, 
     scores['acc'], 
-    s=15, 
+    s=30, 
     c='#c80608', 
     label='test_accuracy'
 )
@@ -170,4 +187,47 @@ axs[1].set_xticks(range(1, epochs+2))
 axs[1].legend()
 
 fig.show()
+
+
+test_images_dir = script_dir / 'mnist_test/28'
+
+test_images = array([
+    array(Image.open(img_path).convert('L'))
+    for img_path in test_images_dir.iterdir()
+    if img_path.is_file()
+])
+test_images = test_images.reshape(
+    test_images.shape[0], 
+    test_images.shape[1] * test_images.shape[2]
+)
+test_images = test_images / 255
+
+# >>> test_images.shape
+# (13, 28, 28)
+
+predictions = model.predict(test_images, verbose=1)
+
+# >>> predictions.round(2)
+# array([[0.2 , 0.  , 0.  , 0.  , 0.  , 0.02, 0.59, 0.  , 0.05, 0.13],
+#        [1.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  ],
+#        [0.99, 0.  , 0.  , 0.  , 0.  , 0.01, 0.  , 0.  , 0.  , 0.  ],
+#        [0.73, 0.  , 0.26, 0.01, 0.  , 0.  , 0.  , 0.  , 0.  , 0.  ],
+#        [0.  , 0.99, 0.  , 0.  , 0.  , 0.  , 0.  , 0.01, 0.  , 0.  ],
+#        [0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.27, 0.  , 0.73, 0.  ],
+#        [0.  , 0.99, 0.  , 0.  , 0.  , 0.  , 0.  , 0.01, 0.01, 0.  ],
+#        [0.  , 1.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  ],
+#        [0.  , 0.  , 0.98, 0.  , 0.  , 0.  , 0.  , 0.  , 0.02, 0.  ],
+#        [0.  , 0.  , 0.97, 0.03, 0.  , 0.  , 0.  , 0.  , 0.  , 0.  ],
+#        [0.01, 0.  , 0.37, 0.11, 0.  , 0.01, 0.  , 0.  , 0.26, 0.24],
+#        [0.  , 0.  , 0.  , 0.  , 0.89, 0.  , 0.  , 0.  , 0.  , 0.1 ],
+#        [0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 1.  , 0.  ]],
+#       dtype=float32)
+# >>> 
+# >>> predictions.argmax(axis=1)
+# array([6, 0, 0, 0, 1, 8, 1, 1, 2, 2, 2, 4, 8])
+
+test_true = array([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 4, 8])
+
+# >>> accuracy_score(test_true, predictions.argmax(axis=1))
+# 0.8461538461538461
 
