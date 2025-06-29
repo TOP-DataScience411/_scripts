@@ -93,7 +93,6 @@ model.add(Dense(10, activation=softmax, name='output'))
 
 model.summary()
 # Model: "MNIST_digits_reckognition"
-# Model: "MNIST_digits_reckognition"
 # ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┓
 # ┃ Layer (type)                         ┃ Output Shape                ┃         Param # ┃
 # ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━┩
