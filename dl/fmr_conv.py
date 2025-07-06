@@ -4,23 +4,27 @@ from keras.activations import (
     softmax,
 )
 from keras.layers import (
+    BatchNormalization,
     Conv2D,
     Dense, 
     Dropout, 
     Flatten,
     Input,
     MaxPooling2D,
+    ReLU,
 )
 from keras.losses import CategoricalCrossentropy
 from keras.metrics import CategoricalAccuracy
 from keras.models import Sequential
 from keras.optimizers import Adam
 
+from matplotlib import pyplot as plt
 from numpy import load
 from sklearn.model_selection import train_test_split
 
 from functools import partial
 from pathlib import Path
+from pprint import pp
 from sys import path
 
 
@@ -36,22 +40,33 @@ model = Sequential([
         shape=(x_train.shape[1:]),
     ),
     Conv2D(
-        filters=10, 
-        kernel_size=(2, 2), 
-        activation=relu,
+        filters=64, 
+        kernel_size=(3, 3), 
+        # activation=relu,
         name='low_lvl_features',
     ),
-    MaxPooling2D(),
+    BatchNormalization(),
+    ReLU(),
+    MaxPooling2D(
+        pool_size=(2, 2),
+    ),
     Conv2D(
-        filters=20, 
-        kernel_size=(2, 2), 
+        filters=64, 
+        kernel_size=(3, 3), 
+        padding='same',
         activation=relu,
         name='mid_lvl_features',
     ),
-    MaxPooling2D(),
+    MaxPooling2D(
+        pool_size=(2, 2),
+    ),
+    Dropout(
+        rate=0.2,
+    ),
     Conv2D(
-        filters=50, 
-        kernel_size=(3, 3), 
+        filters=128, 
+        kernel_size=(2, 2), 
+        padding='same',
         activation=relu,
         name='high_lvl_features',
     ),
@@ -63,12 +78,12 @@ model = Sequential([
         rate=1/3,
     ),
     Dense(
-        units=50,
+        units=100,
         activation=relu,
         name='hidden',
     ),
     Dropout(
-        rate=0.5,
+        rate=0.4,
     ),
     Dense(
         units=3,
@@ -80,17 +95,17 @@ model.summary()
 
 model.compile(
     loss=CategoricalCrossentropy(),
-    optimizer=Adam(learning_rate=0.01),
+    optimizer=Adam(learning_rate=0.001),
     metrics=[
         CategoricalAccuracy(name='acc'),
     ]
 )
 print('\nОБУЧЕНИЕ\n')
-epochs = 25
+epochs = 2
 training_results = model.fit(
     x_train,
     y_train,
-    batch_size=64,
+    batch_size=24,
     epochs=epochs,
     validation_split=0.2,
     verbose=1
